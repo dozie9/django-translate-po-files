@@ -7,6 +7,7 @@ import polib
 import logging
 import requests
 import html
+import uuid
 
 logging.basicConfig(level=logging.INFO,
                     format="%(levelname)8s  [%(asctime)s %(name)15s:%(module)s:%(lineno)4d] \t  %(message)s")
@@ -14,6 +15,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def translate(text, language, source_language, api_key):
+    '''
     response = requests.post(
         "https://translation.googleapis.com/language/translate/v2",
         json={
@@ -28,7 +30,41 @@ def translate(text, language, source_language, api_key):
         response.raise_for_status()
     response = response.json()
     translations = response.get('data', {}).get('translations')
-    return html.unescape(translations[0].get('translatedText')) if translations else None
+    '''
+
+    endpoint = "https://api.cognitive.microsofttranslator.com"
+
+    # location, also known as region.
+    # required if you're using a multi-service or regional (not global) resource. It can be found in the Azure portal on the Keys and Endpoint page.
+    location = "uksouth"
+
+    path = '/translate'
+    constructed_url = endpoint + path
+
+    params = {
+        'api-version': '3.0',
+        'from': source_language,
+        'to': [language]
+    }
+
+    headers = {
+        'Ocp-Apim-Subscription-Key': api_key,
+        # location required if you're using a multi-service or regional (not global) resource.
+        'Ocp-Apim-Subscription-Region': location,
+        'Content-type': 'application/json',
+        'X-ClientTraceId': str(uuid.uuid4())
+    }
+
+    # You can pass more than one object in body.
+    body = [{
+        'text': text
+    }]
+
+    request = requests.post(constructed_url, params=params, headers=headers, json=body)
+    response = request.json()
+    translation = html.unescape(response[0]['translations'][0]['text'])
+
+    return translation
 
 
 if __name__ == '__main__':
