@@ -108,4 +108,7 @@ if __name__ == '__main__':
                     entry.comment = (entry.comment + "\n" if entry.comment else "") + "-- automatically translated --"
                 logging.info(f'Translated: "{entry.msgid}" -> {entry.msgstr}')
 
-        po_file.save(filename)
+        try:
+            po_file.save(filename)
+        except AttributeError:
+            continue
