@@ -62,9 +62,12 @@ def translate(text, language, source_language, api_key):
 
     request = requests.post(constructed_url, params=params, headers=headers, json=body)
     response = request.json()
-    translation = html.unescape(response[0]['translations'][0]['text'])
+    try:
+        translation = html.unescape(response[0]['translations'][0]['text'])
 
-    return translation
+        return translation
+    except KeyError:
+        return None
 
 
 if __name__ == '__main__':
